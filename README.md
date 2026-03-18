@@ -4,6 +4,8 @@
 
 Zero-dependency utility library for information visualization courses.
 
+[**Interactive Tutorial**](https://jonathan-mcewan.github.io/InfoVizUtils/)
+
 ## Quick Start
 
 ```js
@@ -98,11 +100,12 @@ node examples/basics.js
 node examples/scales-and-color.js
 ```
 
-For the browser demo, start a local server (ES modules require HTTP):
+Visit the [interactive tutorial](https://jonathan-mcewan.github.io/InfoVizUtils/) for a guided walkthrough, or start a local server (ES modules require HTTP):
 
 ```bash
 npx serve .
-# then open http://localhost:3000/examples/demo.html
+# then open http://localhost:3000/docs/index.html (tutorial)
+# or http://localhost:3000/examples/demo.html (compact demo)
 ```
 
 ## Running Tests
