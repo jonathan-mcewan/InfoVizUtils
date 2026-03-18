@@ -1,3 +1,5 @@
+[![pages-build-deployment](https://github.com/jonathan-mcewan/InfoVizUtils/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/jonathan-mcewan/InfoVizUtils/actions/workflows/pages/pages-build-deployment)
+
 # infoVisUtils
 
 Zero-dependency utility library for information visualization courses.
