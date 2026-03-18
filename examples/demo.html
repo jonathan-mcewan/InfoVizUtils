@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>infoVisUtils Demo</title>
+  <title>Info Viz Utils Demo</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; color: #333; }
@@ -26,7 +26,7 @@
   </style>
 </head>
 <body>
-  <h1>infoVisUtils Demo</h1>
+  <h1>Info Viz Utils Demo</h1>
   <p>Interactive demonstration of the teaching utility library.</p>
 
   <h2>Summary Statistics</h2>
@@ -46,78 +46,80 @@
     Try: <code>npx serve .</code> or <code>python3 -m http.server</code> from the project root.
   </div>
 
-  <!-- ES module import — requires a local server -->
+  <!-- Module bootstrap -->
   <script type="module">
     import u from "../infoVisUtils.js";
+    window.u = u;
+    window.dispatchEvent(new Event("lib-ready"));
+  </script>
 
-    // Dataset
-    const students = [
-      { name: "Alice",   score: 92, grade: "A" },
-      { name: "Bob",     score: 78, grade: "B" },
-      { name: "Carol",   score: 85, grade: "B" },
-      { name: "Dan",     score: 64, grade: "D" },
-      { name: "Eve",     score: 91, grade: "A" },
-      { name: "Frank",   score: 73, grade: "C" },
-      { name: "Grace",   score: 88, grade: "B" },
-      { name: "Hank",    score: 55, grade: "F" },
-      { name: "Iris",    score: 97, grade: "A" },
-      { name: "Jack",    score: 70, grade: "C" },
-    ];
+  <!-- Render logic (non-module, runs after lib-ready) -->
+  <script>
+    function renderDemo() {
+      var u = window.u;
 
-    const scores = u.unpack(students, "score");
+      var students = [
+        { name: "Alice",   score: 92, grade: "A" },
+        { name: "Bob",     score: 78, grade: "B" },
+        { name: "Carol",   score: 85, grade: "B" },
+        { name: "Dan",     score: 64, grade: "D" },
+        { name: "Eve",     score: 91, grade: "A" },
+        { name: "Frank",   score: 73, grade: "C" },
+        { name: "Grace",   score: 88, grade: "B" },
+        { name: "Hank",    score: 55, grade: "F" },
+        { name: "Iris",    score: 97, grade: "A" },
+        { name: "Jack",    score: 70, grade: "C" },
+      ];
 
-    // --- Section 1: Summary stats ---
-    const statsEl = document.getElementById("stats");
-    const stats = [
-      ["Mean",    u.formatNumber(u.mean(scores))],
-      ["Median",  u.formatNumber(u.median(scores))],
-      ["Std Dev", u.formatNumber(u.stdDev(scores))],
-      ["Min",     u.formatNumber(u.min(scores))],
-      ["Max",     u.formatNumber(u.max(scores))],
-    ];
-    for (const [label, value] of stats) {
-      statsEl.innerHTML += `<div class="stat"><div class="label">${label}</div><div class="value">${value}</div></div>`;
+      var scores = u.unpack(students, "score");
+
+      // --- Section 1: Summary stats ---
+      var statsEl = document.getElementById("stats");
+      var stats = [
+        ["Mean",    u.formatNumber(u.mean(scores))],
+        ["Median",  u.formatNumber(u.median(scores))],
+        ["Std Dev", u.formatNumber(u.stdDev(scores))],
+        ["Min",     u.formatNumber(u.min(scores))],
+        ["Max",     u.formatNumber(u.max(scores))],
+      ];
+      statsEl.innerHTML = stats.map(function(s) {
+        return '<div class="stat"><div class="label">' + s[0] + '</div><div class="value">' + s[1] + '</div></div>';
+      }).join("");
+
+      // --- Section 2: Histogram with color ---
+      var bins = u.bin(scores, 5);
+      var maxCount = u.max(bins.map(function(b) { return b.count; }));
+      var ext = u.extent(scores);
+      var heat = u.colorScale([ext[0], ext[1]], ["#4a90d9", "#f5a623", "#d0021b"]);
+      var histEl = document.getElementById("histogram");
+      histEl.innerHTML = bins.map(function(b) {
+        var pct = maxCount > 0 ? (b.count / maxCount) * 100 : 0;
+        var midVal = (b.min + b.max) / 2;
+        return '<div class="bar" style="height:' + pct + '%; background:' + heat(midVal) + '">' +
+          '<span class="bar-count">' + b.count + '</span>' +
+          '<span class="bar-label">' + Math.round(b.min) + '\u2013' + Math.round(b.max) + '</span></div>';
+      }).join("");
+
+      // --- Section 3: Grouped table ---
+      var byGrade = u.groupBy(students, "grade");
+      var tbody = document.querySelector("#grade-table tbody");
+      var summary = u.sortBy(
+        Object.entries(byGrade).map(function(entry) {
+          var grade = entry[0], rows = entry[1];
+          var s = u.unpack(rows, "score");
+          return { grade: grade, count: rows.length, mean: u.mean(s), min: u.min(s), max: u.max(s) };
+        }),
+        "grade"
+      );
+      tbody.innerHTML = summary.map(function(row) {
+        return '<tr><td>' + row.grade + '</td><td>' + row.count + '</td><td>' +
+          u.formatNumber(row.mean) + '</td><td>' + u.formatNumber(row.min, 0) + '</td><td>' +
+          u.formatNumber(row.max, 0) + '</td></tr>';
+      }).join("");
     }
 
-    // --- Section 2: Histogram with color ---
-    const bins = u.bin(scores, 5);
-    const maxCount = u.max(bins.map((b) => b.count));
-    const [lo, hi] = u.extent(scores);
-    const heat = u.colorScale([lo, hi], ["#4a90d9", "#f5a623", "#d0021b"]);
-    const histEl = document.getElementById("histogram");
-
-    for (const b of bins) {
-      const pct = maxCount > 0 ? (b.count / maxCount) * 100 : 0;
-      const midVal = (b.min + b.max) / 2;
-      const color = heat(midVal);
-      histEl.innerHTML += `
-        <div class="bar" style="height:${pct}%; background:${color}">
-          <span class="bar-count">${b.count}</span>
-          <span class="bar-label">${Math.round(b.min)}–${Math.round(b.max)}</span>
-        </div>`;
-    }
-
-    // --- Section 3: Grouped table ---
-    const byGrade = u.groupBy(students, "grade");
-    const tbody = document.querySelector("#grade-table tbody");
-
-    const summary = u.sortBy(
-      Object.entries(byGrade).map(([grade, rows]) => {
-        const s = u.unpack(rows, "score");
-        return { grade, count: rows.length, mean: u.mean(s), min: u.min(s), max: u.max(s) };
-      }),
-      "grade"
-    );
-
-    for (const row of summary) {
-      tbody.innerHTML += `<tr>
-        <td>${row.grade}</td>
-        <td>${row.count}</td>
-        <td>${u.formatNumber(row.mean)}</td>
-        <td>${u.formatNumber(row.min, 0)}</td>
-        <td>${u.formatNumber(row.max, 0)}</td>
-      </tr>`;
-    }
+    if (window.u) { renderDemo(); }
+    else { window.addEventListener("lib-ready", renderDemo); }
   </script>
 </body>
 </html>

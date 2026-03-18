@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>infoVisUtils — Interactive Tutorial</title>
+  <title>Info Viz Utils — Interactive Tutorial</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem 1rem 4rem; color: #333; line-height: 1.6; }
@@ -29,9 +29,28 @@
     code { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; }
     p code { background: #f6f8fa; padding: 0.15rem 0.4rem; border-radius: 3px; font-size: 0.88em; }
 
+    /* Code editor blocks */
+    .code-block { position: relative; margin-bottom: 0.75rem; }
+    .code-editor {
+      display: block; width: 100%; font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 0.85rem; line-height: 1.5; background: #f6f8fa; border: 1px solid #e1e4e8;
+      border-radius: 6px; padding: 1rem; padding-right: 5rem; resize: vertical; tab-size: 2;
+      color: #333; outline: none;
+    }
+    .code-editor:focus { border-color: #4a90d9; box-shadow: 0 0 0 2px rgba(74,144,217,0.15); }
+    .run-btn {
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      background: #28a745; color: #fff; border: none; border-radius: 999px;
+      padding: 0.3rem 0.9rem; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .run-btn:hover { background: #22863a; }
+
     /* Output areas */
     .output { background: #fafafa; border: 1px dashed #ddd; border-radius: 6px; padding: 1rem; margin-bottom: 0.75rem; font-size: 0.9rem; }
+    .output.error { border-color: #d0021b; background: #fff5f5; }
     .output-label { font-size: 0.75rem; text-transform: uppercase; color: #999; margin-bottom: 0.4rem; letter-spacing: 0.05em; }
+    .error-msg { color: #d0021b; font-family: "SFMono-Regular", Consolas, monospace; font-size: 0.85rem; white-space: pre-wrap; }
 
     /* Stat cards */
     .stats { display: flex; flex-wrap: wrap; gap: 0.75rem; }
@@ -74,9 +93,9 @@
 
   <!-- Hero -->
   <div class="hero">
-    <h1>infoVisUtils</h1>
+    <h1>Info Viz Utils</h1>
     <div class="tagline">Zero-dependency utility library for information visualization courses</div>
-    <div class="note">This page is a live tutorial — every code block below runs in your browser using infoVisUtils.</div>
+    <div class="note">This page is a live tutorial — every code block below is editable. Click <strong>Run</strong> to re-execute after making changes.</div>
   </div>
 
   <!-- Navigation -->
@@ -97,7 +116,8 @@
   <section id="dataset">
     <h2>1. The Dataset</h2>
     <p>We'll use this sample student data throughout the tutorial. Every function below builds on it.</p>
-    <pre><code>const students = [
+    <div class="code-block">
+      <textarea class="code-editor" data-section="dataset" rows="12">const students = [
   { name: "Alice",  score: 92, grade: "A" },
   { name: "Bob",    score: 78, grade: "B" },
   { name: "Carol",  score: 85, grade: "B" },
@@ -108,7 +128,11 @@
   { name: "Hank",   score: 55, grade: "F" },
   { name: "Iris",   score: 97, grade: "A" },
   { name: "Jack",   score: 70, grade: "C" },
-];</code></pre>
+];
+_ctx.students = students;
+showTable(students, ["name", "score", "grade"]);</textarea>
+      <button class="run-btn" data-section="dataset">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">Rendered data</div>
       <div id="out-dataset"></div>
@@ -119,8 +143,12 @@
   <section id="unpack">
     <h2>2. Extracting Columns — <code>unpack</code></h2>
     <p><code>unpack</code> pulls a single column out of an array of objects — the foundation for everything that follows.</p>
-    <pre><code>const scores = u.unpack(students, "score");
-// → [92, 78, 85, 64, 91, 73, 88, 55, 97, 70]</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="unpack" rows="3">const scores = u.unpack(_ctx.students, "score");
+_ctx.scores = scores;
+show(scores);</textarea>
+      <button class="run-btn" data-section="unpack">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">Result</div>
       <div id="out-unpack"></div>
@@ -131,14 +159,20 @@
   <section id="statistics">
     <h2>3. Summary Statistics</h2>
     <p>Compute common descriptive stats in one call each.</p>
-    <pre><code>u.mean(scores)          u.median(scores)
-u.mode(scores)          u.stdDev(scores)
-u.min(scores)           u.max(scores)
-u.sum(scores)           u.extent(scores)
-u.percentile(scores, 25)  u.percentile(scores, 75)</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="statistics" rows="6">const scores = _ctx.scores;
+showStats([
+  ["Mean", u.formatNumber(u.mean(scores))], ["Median", u.formatNumber(u.median(scores))],
+  ["Mode", u.mode(scores)], ["Std Dev", u.formatNumber(u.stdDev(scores))],
+  ["Min", u.min(scores)], ["Max", u.max(scores)], ["Sum", u.sum(scores)],
+  ["Extent", "[" + u.extent(scores).join(", ") + "]"],
+  ["P25", u.formatNumber(u.percentile(scores, 25))], ["P75", u.formatNumber(u.percentile(scores, 75))],
+]);</textarea>
+      <button class="run-btn" data-section="statistics">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">Results</div>
-      <div class="stats" id="out-stats"></div>
+      <div class="stats" id="out-statistics"></div>
     </div>
   </section>
 
@@ -147,22 +181,35 @@ u.percentile(scores, 25)  u.percentile(scores, 75)</code></pre>
     <h2>4. Sorting &amp; Filtering</h2>
 
     <p>Sort objects by any key. <code>sortBy</code> returns a new array — the original is never mutated.</p>
-    <pre><code>u.sortBy(students, "score", "desc")</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="sort" rows="2">const sorted = u.sortBy(_ctx.students, "score", "desc");
+showTable(sorted, ["name", "score", "grade"]);</textarea>
+      <button class="run-btn" data-section="sort">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">Sorted by score (descending)</div>
       <div id="out-sort"></div>
     </div>
 
     <p>Filter with a predicate function.</p>
-    <pre><code>u.filterRows(students, r =&gt; r.score &gt;= 80)</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="filter" rows="2">const filtered = u.filterRows(_ctx.students, r => r.score >= 80);
+showTable(filtered, ["name", "score", "grade"]);</textarea>
+      <button class="run-btn" data-section="filter">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">Students scoring 80+</div>
       <div id="out-filter"></div>
     </div>
 
     <p>Extract unique values and frequency counts.</p>
-    <pre><code>u.unique(u.unpack(students, "grade"))
-u.counts(u.unpack(students, "grade"))</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="unique" rows="4">const grades = u.unpack(_ctx.students, "grade");
+const uniq = u.unique(grades);
+const cts = u.counts(grades);
+show("unique: [" + uniq.map(v => '"' + v + '"').join(", ") + "]\ncounts: " + JSON.stringify(cts));</textarea>
+      <button class="run-btn" data-section="unique">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">Unique grades &amp; counts</div>
       <div id="out-unique"></div>
@@ -173,11 +220,20 @@ u.counts(u.unpack(students, "grade"))</code></pre>
   <section id="grouping">
     <h2>5. Grouping &amp; Aggregation — <code>groupBy</code></h2>
     <p>Group rows by a column, then aggregate each group — a common pattern in data analysis.</p>
-    <pre><code>const byGrade = u.groupBy(students, "grade");
-// Then compute count, mean score per group</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="grouping" rows="7">const byGrade = u.groupBy(_ctx.students, "grade");
+const summary = u.sortBy(
+  Object.entries(byGrade).map(([grade, rows]) => {
+    const s = u.unpack(rows, "score");
+    return { grade, count: rows.length, meanScore: u.formatNumber(u.mean(s)) };
+  }), "grade"
+);
+showTable(summary, ["grade", "count", "meanScore"]);</textarea>
+      <button class="run-btn" data-section="grouping">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">Grouped summary</div>
-      <div id="out-group"></div>
+      <div id="out-grouping"></div>
     </div>
   </section>
 
@@ -185,11 +241,15 @@ u.counts(u.unpack(students, "grade"))</code></pre>
   <section id="binning">
     <h2>6. Binning &amp; Visualization — <code>bin</code>, <code>colorScale</code></h2>
     <p>Create histogram bins, then color them with an interpolated color scale.</p>
-    <pre><code>const bins = u.bin(scores, 5);
-const heat = u.colorScale(u.extent(scores), ["#4a90d9", "#f5a623", "#d0021b"]);</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="binning" rows="3">const bins = u.bin(_ctx.scores, 5);
+const heat = u.colorScale(u.extent(_ctx.scores), ["#4a90d9", "#f5a623", "#d0021b"]);
+showHistogram(bins, heat);</textarea>
+      <button class="run-btn" data-section="binning">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">Histogram</div>
-      <div class="histogram" id="out-histogram"></div>
+      <div class="histogram" id="out-binning"></div>
     </div>
   </section>
 
@@ -197,16 +257,23 @@ const heat = u.colorScale(u.extent(scores), ["#4a90d9", "#f5a623", "#d0021b"]);<
   <section id="scales">
     <h2>7. Scales — <code>linearScale</code>, <code>normalize</code></h2>
     <p><code>linearScale</code> maps values from one range to another — for example, scores to pixel widths.</p>
-    <pre><code>const toWidth = u.linearScale([0, 100], [0, 500]);
-// toWidth(92) → 460</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="scale" rows="3">const toWidth = u.linearScale([0, 100], [0, 500]);
+const sortedForBars = u.sortBy(_ctx.students, "score", "desc");
+showBars(sortedForBars, "name", "score", toWidth);</textarea>
+      <button class="run-btn" data-section="scale">Run ▶</button>
+    </div>
     <div class="output">
-      <div class="output-label">Scores as horizontal bars (mapped to 0–500px)</div>
+      <div class="output-label">Scores as horizontal bars (mapped to 0-500px)</div>
       <div id="out-scale"></div>
     </div>
 
     <p><code>normalize</code> scales an array to [0, 1] (or any custom range).</p>
-    <pre><code>u.normalize(scores)
-// → values between 0 and 1</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="normalize" rows="2">const normalized = u.normalize(_ctx.scores);
+show(normalized.map(v => v.toFixed(3)));</textarea>
+      <button class="run-btn" data-section="normalize">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">Normalized scores</div>
       <div id="out-normalize"></div>
@@ -217,10 +284,20 @@ const heat = u.colorScale(u.extent(scores), ["#4a90d9", "#f5a623", "#d0021b"]);<
   <section id="rolling">
     <h2>8. Rolling Functions — <code>rollingAverage</code>, <code>rollingSum</code></h2>
     <p>Compute moving averages or sums over a sliding window. Useful for smoothing noisy data.</p>
-    <pre><code>u.rollingAverage(scores, 3)
-u.rollingSum(scores, 3)</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="rolling" rows="10">const scores = _ctx.scores;
+const ra = u.rollingAverage(scores, 3);
+let html = '<div class="rolling-grid">';
+html += '<span class="rh">Index</span><span class="rh">Original</span><span class="rh">Avg (w=3)</span>';
+scores.forEach((s, i) => {
+  html += "<span>" + i + "</span><span>" + s + "</span><span>" + ra[i].toFixed(1) + "</span>";
+});
+html += "</div>";
+show(html, true);</textarea>
+      <button class="run-btn" data-section="rolling">Run ▶</button>
+    </div>
     <div class="output">
-      <div class="output-label">Original vs. 3-point rolling average &amp; sum</div>
+      <div class="output-label">Original vs. 3-point rolling average</div>
       <div id="out-rolling"></div>
     </div>
   </section>
@@ -229,13 +306,18 @@ u.rollingSum(scores, 3)</code></pre>
   <section id="formatting">
     <h2>9. Formatting — <code>formatNumber</code>, <code>formatPercent</code></h2>
     <p>Clean display of numbers and percentages for labels and annotations.</p>
-    <pre><code>u.formatNumber(1234.5)      // → "1,234.50"
-u.formatNumber(79.3, 1)     // → "79.3"
-u.formatPercent(0.793)       // → "79.30%"
-u.formatPercent(0.793, 0)    // → "79%"</code></pre>
+    <div class="code-block">
+      <textarea class="code-editor" data-section="formatting" rows="5">show([
+  "formatNumber(1234.5)    → " + u.formatNumber(1234.5),
+  "formatNumber(79.3, 1)   → " + u.formatNumber(79.3, 1),
+  "formatPercent(0.793)     → " + u.formatPercent(0.793),
+  "formatPercent(0.793, 0)  → " + u.formatPercent(0.793, 0),
+].join("\n"));</textarea>
+      <button class="run-btn" data-section="formatting">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">Formatted output</div>
-      <div id="out-format"></div>
+      <div id="out-formatting"></div>
     </div>
   </section>
 
@@ -243,23 +325,32 @@ u.formatPercent(0.793, 0)    // → "79%"</code></pre>
   <section id="parsing">
     <h2>10. Parsing Helpers — <code>autoType</code>, <code>parseDates</code></h2>
     <p><code>autoType</code> converts string values (e.g. from CSV) to appropriate types — numbers, dates, or null.</p>
-    <pre><code>const raw = [
+    <div class="code-block">
+      <textarea class="code-editor" data-section="autotype" rows="7">const raw = [
   { name: "Alice", score: "92", enrolled: "2024-01-15" },
   { name: "Bob",   score: "78", enrolled: "2024-02-01" },
 ];
-u.autoType(raw);
-// score becomes a number, enrolled becomes a Date</code></pre>
+const typed = u.autoType(raw);
+const info = typed.map(r =>
+  '{ name: "' + r.name + '", score: ' + r.score + " (" + typeof r.score + "), enrolled: " + (r.enrolled instanceof Date ? r.enrolled.toISOString().split("T")[0] : r.enrolled) + " (" + (r.enrolled instanceof Date ? "Date" : typeof r.enrolled) + ") }");
+show(info.join("\n"));</textarea>
+      <button class="run-btn" data-section="autotype">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">autoType result</div>
       <div id="out-autotype"></div>
     </div>
 
     <p><code>parseDates</code> targets a specific column with an optional format string.</p>
-    <pre><code>const rows = [
+    <div class="code-block">
+      <textarea class="code-editor" data-section="parsedates" rows="6">const rows = [
   { event: "Midterm", date: "15/03/2024" },
   { event: "Final",   date: "20/06/2024" },
 ];
-u.parseDates(rows, "date", "DD/MM/YYYY");</code></pre>
+const parsed = u.parseDates(rows, "date", "DD/MM/YYYY");
+show(parsed.map(r => '{ event: "' + r.event + '", date: ' + r.date.toISOString().split("T")[0] + " (Date) }").join("\n"));</textarea>
+      <button class="run-btn" data-section="parsedates">Run ▶</button>
+    </div>
     <div class="output">
       <div class="output-label">parseDates result</div>
       <div id="out-parsedates"></div>
@@ -268,7 +359,7 @@ u.parseDates(rows, "date", "DD/MM/YYYY");</code></pre>
 
   <!-- Footer -->
   <footer>
-    <div>infoVisUtils — a teaching utility for information visualization</div>
+    <div>Info Viz Utils — a teaching utility for information visualization</div>
     <div class="links">
       <a href="https://github.com/jonathan-mcewan/InfoVizUtils">GitHub</a>
       <a href="https://github.com/jonathan-mcewan/InfoVizUtils/blob/main/infoVisUtils-reference.md">API Reference</a>
@@ -276,163 +367,149 @@ u.parseDates(rows, "date", "DD/MM/YYYY");</code></pre>
     </div>
   </footer>
 
-  <!-- Live script — populates all output sections -->
+  <!-- Script A: module bootstrap — load library onto window -->
   <script type="module">
     import u from "../infoVisUtils.js";
+    window.u = u;
+    window.dispatchEvent(new Event("lib-ready"));
+  </script>
 
-    // --- Dataset ---
-    const students = [
-      { name: "Alice",  score: 92, grade: "A" },
-      { name: "Bob",    score: 78, grade: "B" },
-      { name: "Carol",  score: 85, grade: "B" },
-      { name: "Dan",    score: 64, grade: "D" },
-      { name: "Eve",    score: 91, grade: "A" },
-      { name: "Frank",  score: 73, grade: "C" },
-      { name: "Grace",  score: 88, grade: "B" },
-      { name: "Hank",   score: 55, grade: "F" },
-      { name: "Iris",   score: 97, grade: "A" },
-      { name: "Jack",   score: 70, grade: "C" },
-    ];
+  <!-- Script B: interactive runner (non-module) -->
+  <script>
+    // Shared context for cross-section data
+    var _ctx = {};
 
-    const scores = u.unpack(students, "score");
+    // --- Output helpers ---
 
-    // Helper: render an array of objects as an HTML table
-    function renderTable(rows, columns) {
-      const ths = columns.map(c => `<th>${c}</th>`).join("");
-      const trs = rows.map(r =>
-        "<tr>" + columns.map(c => `<td>${r[c]}</td>`).join("") + "</tr>"
-      ).join("");
-      return `<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+    function _getOutputEl(sectionId) {
+      // Map section ids to their output div ids
+      var el = document.getElementById("out-" + sectionId);
+      if (!el) {
+        // Try finding via the currently-running section
+        el = document.getElementById("out-" + _currentSection);
+      }
+      return el;
     }
 
-    // 1. Dataset table
-    document.getElementById("out-dataset").innerHTML =
-      renderTable(students, ["name", "score", "grade"]);
+    var _currentSection = null;
 
-    // 2. Unpack
-    document.getElementById("out-unpack").innerHTML =
-      `<code>[${scores.join(", ")}]</code>`;
+    function show(value, isHtml) {
+      var el = _getOutputEl(_currentSection);
+      if (!el) return;
+      if (isHtml) {
+        el.innerHTML = String(value);
+      } else if (Array.isArray(value)) {
+        el.innerHTML = "<code>[" + value.join(", ") + "]</code>";
+      } else {
+        el.innerHTML = "<code style='white-space:pre-wrap'>" + String(value).replace(/</g, "&lt;").replace(/>/g, "&gt;") + "</code>";
+      }
+      el.closest(".output").classList.remove("error");
+    }
 
-    // 3. Statistics
-    const statsEl = document.getElementById("out-stats");
-    const statItems = [
-      ["Mean",   u.formatNumber(u.mean(scores))],
-      ["Median", u.formatNumber(u.median(scores))],
-      ["Mode",   u.mode(scores)],
-      ["Std Dev", u.formatNumber(u.stdDev(scores))],
-      ["Min",    u.min(scores)],
-      ["Max",    u.max(scores)],
-      ["Sum",    u.sum(scores)],
-      ["Extent", `[${u.extent(scores).join(", ")}]`],
-      ["P25",    u.formatNumber(u.percentile(scores, 25))],
-      ["P75",    u.formatNumber(u.percentile(scores, 75))],
-    ];
-    statsEl.innerHTML = statItems.map(([label, value]) =>
-      `<div class="stat"><div class="label">${label}</div><div class="value">${value}</div></div>`
-    ).join("");
+    function showTable(rows, cols) {
+      var el = _getOutputEl(_currentSection);
+      if (!el) return;
+      var ths = cols.map(function(c) { return "<th>" + c + "</th>"; }).join("");
+      var trs = rows.map(function(r) {
+        return "<tr>" + cols.map(function(c) { return "<td>" + r[c] + "</td>"; }).join("") + "</tr>";
+      }).join("");
+      el.innerHTML = "<table><thead><tr>" + ths + "</tr></thead><tbody>" + trs + "</tbody></table>";
+      el.closest(".output").classList.remove("error");
+    }
 
-    // 4. Sorting & Filtering
-    const sorted = u.sortBy(students, "score", "desc");
-    document.getElementById("out-sort").innerHTML =
-      renderTable(sorted, ["name", "score", "grade"]);
+    function showStats(items) {
+      var el = _getOutputEl(_currentSection);
+      if (!el) return;
+      el.innerHTML = items.map(function(item) {
+        return '<div class="stat"><div class="label">' + item[0] + '</div><div class="value">' + item[1] + '</div></div>';
+      }).join("");
+      el.closest(".output").classList.remove("error");
+    }
 
-    const filtered = u.filterRows(students, r => r.score >= 80);
-    document.getElementById("out-filter").innerHTML =
-      renderTable(filtered, ["name", "score", "grade"]);
+    function showHistogram(bins, colorFn) {
+      var el = _getOutputEl(_currentSection);
+      if (!el) return;
+      var maxCount = Math.max.apply(null, bins.map(function(b) { return b.count; }));
+      el.innerHTML = bins.map(function(b) {
+        var pct = maxCount > 0 ? (b.count / maxCount) * 100 : 0;
+        var mid = (b.min + b.max) / 2;
+        return '<div class="bar" style="height:' + pct + '%; background:' + colorFn(mid) + '">' +
+          '<span class="bar-count">' + b.count + '</span>' +
+          '<span class="bar-label">' + Math.round(b.min) + '\u2013' + Math.round(b.max) + '</span></div>';
+      }).join("");
+      el.closest(".output").classList.remove("error");
+    }
 
-    const grades = u.unpack(students, "grade");
-    const uniq = u.unique(grades);
-    const cts = u.counts(grades);
-    document.getElementById("out-unique").innerHTML =
-      `<code>unique: [${uniq.map(v => `"${v}"`).join(", ")}]</code><br>` +
-      `<code>counts: ${JSON.stringify(cts)}</code>`;
+    function showBars(data, nameKey, valKey, scaleFn) {
+      var el = _getOutputEl(_currentSection);
+      if (!el) return;
+      el.innerHTML = '<div class="hbar-chart">' + data.map(function(d) {
+        return '<div class="hbar-row">' +
+          '<span class="hbar-name">' + d[nameKey] + '</span>' +
+          '<div class="hbar-bar" style="width:' + scaleFn(d[valKey]) + 'px"></div>' +
+          '<span class="hbar-val">' + d[valKey] + '</span></div>';
+      }).join("") + '</div>';
+      el.closest(".output").classList.remove("error");
+    }
 
-    // 5. Grouping
-    const byGrade = u.groupBy(students, "grade");
-    const groupSummary = u.sortBy(
-      Object.entries(byGrade).map(([grade, rows]) => {
-        const s = u.unpack(rows, "score");
-        return { grade, count: rows.length, meanScore: u.formatNumber(u.mean(s)) };
-      }),
-      "grade"
-    );
-    document.getElementById("out-group").innerHTML =
-      renderTable(groupSummary, ["grade", "count", "meanScore"]);
+    // --- Section runner ---
 
-    // 6. Histogram
-    const bins = u.bin(scores, 5);
-    const maxCount = u.max(bins.map(b => b.count));
-    const [lo, hi] = u.extent(scores);
-    const heat = u.colorScale([lo, hi], ["#4a90d9", "#f5a623", "#d0021b"]);
-    const histEl = document.getElementById("out-histogram");
-    histEl.innerHTML = bins.map(b => {
-      const pct = maxCount > 0 ? (b.count / maxCount) * 100 : 0;
-      const mid = (b.min + b.max) / 2;
-      return `<div class="bar" style="height:${pct}%; background:${heat(mid)}">
-        <span class="bar-count">${b.count}</span>
-        <span class="bar-label">${Math.round(b.min)}&ndash;${Math.round(b.max)}</span>
-      </div>`;
-    }).join("");
+    function runSection(id) {
+      _currentSection = id;
+      var textarea = document.querySelector('textarea[data-section="' + id + '"]');
+      if (!textarea) return;
+      var code = textarea.value;
+      var el = _getOutputEl(id);
 
-    // 7. Scales
-    const toWidth = u.linearScale([0, 100], [0, 500]);
-    const sortedForBars = u.sortBy(students, "score", "desc");
-    document.getElementById("out-scale").innerHTML =
-      `<div class="hbar-chart">` +
-      sortedForBars.map(s =>
-        `<div class="hbar-row">
-          <span class="hbar-name">${s.name}</span>
-          <div class="hbar-bar" style="width:${toWidth(s.score)}px"></div>
-          <span class="hbar-val">${s.score}</span>
-        </div>`
-      ).join("") +
-      `</div>`;
+      try {
+        var fn = new Function("u", "_ctx", "show", "showTable", "showStats", "showHistogram", "showBars", code);
+        fn(window.u, _ctx, show, showTable, showStats, showHistogram, showBars);
+      } catch (e) {
+        if (el) {
+          el.innerHTML = '<div class="error-msg">' + e.toString().replace(/</g, "&lt;") + '</div>';
+          el.closest(".output").classList.add("error");
+        }
+      }
+      _currentSection = null;
+    }
 
-    const normalized = u.normalize(scores);
-    document.getElementById("out-normalize").innerHTML =
-      `<code>[${normalized.map(v => v.toFixed(3)).join(", ")}]</code>`;
-
-    // 8. Rolling
-    const ra = u.rollingAverage(scores, 3);
-    const rs = u.rollingSum(scores, 3);
-    let rollingHtml = `<div class="rolling-grid">`;
-    rollingHtml += `<span class="rh">Index</span><span class="rh">Original</span><span class="rh">Avg (w=3)</span>`;
-    scores.forEach((s, i) => {
-      rollingHtml += `<span>${i}</span><span>${s}</span><span>${ra[i].toFixed(1)}</span>`;
+    // --- Wire up Run buttons ---
+    document.querySelectorAll(".run-btn").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        runSection(btn.getAttribute("data-section"));
+      });
     });
-    rollingHtml += `</div>`;
-    document.getElementById("out-rolling").innerHTML = rollingHtml;
 
-    // 9. Formatting
-    document.getElementById("out-format").innerHTML = [
-      `formatNumber(1234.5)    → <strong>${u.formatNumber(1234.5)}</strong>`,
-      `formatNumber(79.3, 1)   → <strong>${u.formatNumber(79.3, 1)}</strong>`,
-      `formatPercent(0.793)     → <strong>${u.formatPercent(0.793)}</strong>`,
-      `formatPercent(0.793, 0)  → <strong>${u.formatPercent(0.793, 0)}</strong>`,
-    ].map(line => `<code>${line}</code>`).join("<br>");
+    // --- Tab key inserts spaces in textareas ---
+    document.querySelectorAll(".code-editor").forEach(function(ta) {
+      ta.addEventListener("keydown", function(e) {
+        if (e.key === "Tab") {
+          e.preventDefault();
+          var start = ta.selectionStart;
+          var end = ta.selectionEnd;
+          ta.value = ta.value.substring(0, start) + "  " + ta.value.substring(end);
+          ta.selectionStart = ta.selectionEnd = start + 2;
+        }
+      });
+    });
 
-    // 10. Parsing — autoType
-    const raw = [
-      { name: "Alice", score: "92", enrolled: "2024-01-15" },
-      { name: "Bob",   score: "78", enrolled: "2024-02-01" },
+    // --- Auto-run all sections when library is ready ---
+    var sectionOrder = [
+      "dataset", "unpack", "statistics", "sort", "filter", "unique",
+      "grouping", "binning", "scale", "normalize", "rolling",
+      "formatting", "autotype", "parsedates"
     ];
-    const typed = u.autoType(raw);
-    const typeInfo = typed.map(r =>
-      `{ name: "${r.name}", score: ${r.score} (${typeof r.score}), enrolled: ${r.enrolled instanceof Date ? r.enrolled.toISOString().split("T")[0] : r.enrolled} (${r.enrolled instanceof Date ? "Date" : typeof r.enrolled}) }`
-    );
-    document.getElementById("out-autotype").innerHTML =
-      typeInfo.map(t => `<code>${t}</code>`).join("<br>");
 
-    // 10b. parseDates
-    const dateRows = [
-      { event: "Midterm", date: "15/03/2024" },
-      { event: "Final",   date: "20/06/2024" },
-    ];
-    const parsed = u.parseDates(dateRows, "date", "DD/MM/YYYY");
-    document.getElementById("out-parsedates").innerHTML =
-      parsed.map(r =>
-        `<code>{ event: "${r.event}", date: ${r.date.toISOString().split("T")[0]} (Date) }</code>`
-      ).join("<br>");
+    function runAll() {
+      sectionOrder.forEach(function(id) { runSection(id); });
+    }
+
+    // If the library is already loaded, run immediately; otherwise wait
+    if (window.u) {
+      runAll();
+    } else {
+      window.addEventListener("lib-ready", runAll);
+    }
   </script>
 </body>
 </html>
