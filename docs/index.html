@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Info Viz Utils — Interactive Tutorial</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: system-ui, -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 2rem 1rem 4rem; color: #333; line-height: 1.6; }
@@ -64,20 +65,6 @@
     th, td { padding: 0.4rem 0.75rem; text-align: left; border-bottom: 1px solid #eee; }
     th { background: #f9f9f9; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; color: #666; }
     td { font-variant-numeric: tabular-nums; font-size: 0.9rem; }
-
-    /* Histogram */
-    .histogram { display: flex; align-items: flex-end; gap: 4px; height: 150px; margin: 0.5rem 0 2rem; }
-    .bar { flex: 1; border-radius: 4px 4px 0 0; position: relative; min-width: 30px; transition: opacity 0.2s; }
-    .bar:hover { opacity: 0.8; }
-    .bar-label { position: absolute; bottom: -1.5rem; left: 0; right: 0; text-align: center; font-size: 0.7rem; color: #888; }
-    .bar-count { position: absolute; top: -1.3rem; left: 0; right: 0; text-align: center; font-size: 0.75rem; font-weight: 600; }
-
-    /* Horizontal bar chart */
-    .hbar-chart { display: flex; flex-direction: column; gap: 0.4rem; }
-    .hbar-row { display: flex; align-items: center; gap: 0.5rem; }
-    .hbar-name { width: 60px; text-align: right; font-size: 0.85rem; font-weight: 500; }
-    .hbar-bar { height: 22px; border-radius: 3px; background: #4a90d9; transition: width 0.3s; }
-    .hbar-val { font-size: 0.8rem; color: #666; }
 
     /* Rolling display */
     .rolling-grid { display: grid; grid-template-columns: auto 1fr 1fr; gap: 0.1rem 1rem; font-size: 0.85rem; }
@@ -250,7 +237,7 @@ showHistogram(bins, heat);</textarea>
     </div>
     <div class="output">
       <div class="output-label">Histogram</div>
-      <div class="histogram" id="out-binning"></div>
+      <div id="out-binning"></div>
     </div>
   </section>
 
@@ -259,13 +246,12 @@ showHistogram(bins, heat);</textarea>
     <h2>7. Scales — <code>linearScale</code>, <code>normalize</code></h2>
     <p><code>linearScale</code> maps values from one range to another — for example, scores to pixel widths.</p>
     <div class="code-block">
-      <textarea class="code-editor" data-section="scale" rows="3">const toWidth = u.linearScale([0, 100], [0, 500]);
-const sortedForBars = u.sortBy(_ctx.students, "score", "desc");
-showBars(sortedForBars, "name", "score", toWidth);</textarea>
+      <textarea class="code-editor" data-section="scale" rows="2">const sortedForBars = u.sortBy(_ctx.students, "score", "desc");
+showBars(sortedForBars, "name", "score");</textarea>
       <button class="run-btn" data-section="scale">Run ▶</button>
     </div>
     <div class="output">
-      <div class="output-label">Scores as horizontal bars (mapped to 0-500px)</div>
+      <div class="output-label">Scores as horizontal bars</div>
       <div id="out-scale"></div>
     </div>
 
@@ -427,29 +413,49 @@ show(parsed.map(r => '{ event: "' + r.event + '", date: ' + r.date.toISOString()
       el.closest(".output").classList.remove("error");
     }
 
-    function showHistogram(bins, colorFn) {
+    function showPlot(traces, layout) {
       var el = _getOutputEl(_currentSection);
       if (!el) return;
-      var maxCount = Math.max.apply(null, bins.map(function(b) { return b.count; }));
-      el.innerHTML = bins.map(function(b) {
-        var pct = maxCount > 0 ? (b.count / maxCount) * 100 : 0;
-        var mid = (b.min + b.max) / 2;
-        return '<div class="bar" style="height:' + pct + '%; background:' + colorFn(mid) + '">' +
-          '<span class="bar-count">' + b.count + '</span>' +
-          '<span class="bar-label">' + Math.round(b.min) + '\u2013' + Math.round(b.max) + '</span></div>';
-      }).join("");
+      el.innerHTML = "";
+      var plotLayout = Object.assign({ margin: { t: 20, r: 20, b: 40, l: 50 }, height: 250 }, layout || {});
+      Plotly.newPlot(el, traces, plotLayout, { responsive: true, displayModeBar: false });
       el.closest(".output").classList.remove("error");
     }
 
-    function showBars(data, nameKey, valKey, scaleFn) {
+    function showHistogram(bins, colorFn) {
       var el = _getOutputEl(_currentSection);
       if (!el) return;
-      el.innerHTML = '<div class="hbar-chart">' + data.map(function(d) {
-        return '<div class="hbar-row">' +
-          '<span class="hbar-name">' + d[nameKey] + '</span>' +
-          '<div class="hbar-bar" style="width:' + scaleFn(d[valKey]) + 'px"></div>' +
-          '<span class="hbar-val">' + d[valKey] + '</span></div>';
-      }).join("") + '</div>';
+      el.innerHTML = "";
+      var x = bins.map(function(b) { return Math.round(b.min) + "\u2013" + Math.round(b.max); });
+      var y = bins.map(function(b) { return b.count; });
+      var colors = bins.map(function(b) { return colorFn((b.min + b.max) / 2); });
+      Plotly.newPlot(el, [{
+        type: "bar", x: x, y: y,
+        marker: { color: colors, line: { width: 0 } },
+        hovertemplate: "%{x}<br>Count: %{y}<extra></extra>"
+      }], {
+        margin: { t: 10, r: 20, b: 40, l: 40 }, height: 220,
+        xaxis: { title: "Range" }, yaxis: { title: "Count" },
+        bargap: 0.05
+      }, { responsive: true, displayModeBar: false });
+      el.closest(".output").classList.remove("error");
+    }
+
+    function showBars(data, nameKey, valKey) {
+      var el = _getOutputEl(_currentSection);
+      if (!el) return;
+      el.innerHTML = "";
+      var names = data.map(function(d) { return d[nameKey]; });
+      var vals = data.map(function(d) { return d[valKey]; });
+      Plotly.newPlot(el, [{
+        type: "bar", y: names, x: vals, orientation: "h",
+        marker: { color: "#4a90d9" },
+        hovertemplate: "%{y}: %{x}<extra></extra>"
+      }], {
+        margin: { t: 10, r: 20, b: 40, l: 60 }, height: 300,
+        xaxis: { title: valKey }, yaxis: { autorange: "reversed" },
+        bargap: 0.15
+      }, { responsive: true, displayModeBar: false });
       el.closest(".output").classList.remove("error");
     }
 
@@ -463,8 +469,8 @@ show(parsed.map(r => '{ event: "' + r.event + '", date: ' + r.date.toISOString()
       var el = _getOutputEl(id);
 
       try {
-        var fn = new Function("u", "_ctx", "show", "showTable", "showStats", "showHistogram", "showBars", code);
-        fn(window.u, _ctx, show, showTable, showStats, showHistogram, showBars);
+        var fn = new Function("u", "_ctx", "show", "showTable", "showStats", "showHistogram", "showBars", "showPlot", code);
+        fn(window.u, _ctx, show, showTable, showStats, showHistogram, showBars, showPlot);
       } catch (e) {
         if (el) {
           el.innerHTML = '<div class="error-msg">' + e.toString().replace(/</g, "&lt;") + '</div>';
