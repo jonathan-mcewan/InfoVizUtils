@@ -2,5 +2,20 @@
   "name": "infovizutils",
   "version": "1.0.0",
   "type": "module",
-  "description": "Information Visualization utility library for teaching"
+  "description": "Zero-dependency utility library for information visualization courses",
+  "main": "infoVisUtils.js",
+  "exports": { ".": "./infoVisUtils.js" },
+  "files": ["infoVisUtils.js", "LICENSE", "README.md", "examples/", "infoVisUtils-reference.md"],
+  "scripts": {
+    "test": "node --test infoVisUtils.test.js"
+  },
+  "keywords": ["information-visualization", "infovis", "statistics", "data-wrangling", "teaching", "plotly", "d3"],
+  "author": "Jonathan McEwan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jonathan-mcewan/InfoVizUtils.git"
+  },
+  "bugs": { "url": "https://github.com/jonathan-mcewan/InfoVizUtils/issues" },
+  "homepage": "https://github.com/jonathan-mcewan/InfoVizUtils#readme"
 }
